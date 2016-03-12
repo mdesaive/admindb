@@ -65,5 +65,15 @@ Edit admindb/admindb/settings_secret.py
 
 Connect to http://localhost:8000/admin/
 
+# Structure
+Planned to create a hierarchical app structure. Something like the following:
 
+    itservice (itservice, group, distribution, type)
+      medneo_specific (center_requirement)
+      systems (computer, container, virtual_machine, landspace)
+        hardware (cpu, nic, disk, mainboard, ...)
+          linux_storage (harddisk, partition, sw_raid, luks_crypt, lvm_vg, lvm_lv, drbd, filesystem)
+            backups ()
+        operatingsystem (init_service, network_service, version)
+      staff (define responsibilities for itservices, systems and documentation)
 
