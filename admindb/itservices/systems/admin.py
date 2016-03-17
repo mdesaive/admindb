@@ -22,10 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.contrib import admin
+from django.contrib.contenttypes.admin import GenericTabularInline
 
 from itservices.systems.models import Landspace
 from itservices.systems.models import VirtualizationTechnology
-from itservices.systems.models import HostPlug
 from itservices.systems.models import HostInstance
 from itservices.systems.models import Computer
 from itservices.systems.models import Cluster
@@ -34,6 +34,7 @@ from itservices.systems.models import ClusterMapComputer
 from itservices.systems.models import ClusterTechnology
 from itservices.systems.models import Container
 from itservices.systems.models import VM
+from itservices.systems.models import ImportSystemsAggregated
 
 
 class ClusterMapComputerInline(admin.TabularInline):
@@ -62,18 +63,25 @@ class ClusterMapComputerAdmin(admin.ModelAdmin):
 # ordering = ('new_area', 'area', 'system')
 
 
+class ContainerInline(GenericTabularInline):
+    model = Container
+    extra = 1
+    exclude = ('note', )
+
+
+class VMInline(GenericTabularInline):
+    model = VM
+    extra = 1
+    exclude = ('note', )
+
+
 class ComputerAdmin(admin.ModelAdmin):
     fieldsets = [(
         None, {
             'fields': ['name', 'description', 'note', 'itservice', 'landspace']}),
     ]
+    inlines = (ContainerInline, VMInline)
     list_display = ('name', 'description', 'itservice', 'landspace')
-
-
-class ComputerInline(admin.TabularInline):
-    model = Computer
-    extra = 1
-    exclude = ('note',)
 
 
 class ClusterAdmin(admin.ModelAdmin):
@@ -81,15 +89,9 @@ class ClusterAdmin(admin.ModelAdmin):
         None, {
             'fields': ['name', 'cluster_technology', 'description', 'note', 'itservice', 'landspace']}),
     ]
-    inlines = (ClusterMapComputerInline, )
+    inlines = (ClusterMapComputerInline, ContainerInline, VMInline)
     list_display = ('name', 'cluster_technology',
                     'description', 'itservice', 'landspace')
-
-
-class ClusterInline(admin.TabularInline):
-    model = Cluster
-    extra = 1
-    exclude = ('note',)
 
 
 class HostInstanceAdmin(admin.ModelAdmin):
@@ -100,29 +102,12 @@ class HostInstanceAdmin(admin.ModelAdmin):
     # 'note', 'itservice', 'landspace')
 
 
-class HostPlugAdmin(admin.ModelAdmin):
-    inlines = (ComputerInline, ClusterInline)
-
-
-class ContainerInline(admin.TabularInline):
-    model = Container
-    extra = 1
-    exclude = ('note', )
-
-
-class VMInline(admin.TabularInline):
-    model = VM
-    extra = 1
-    exclude = ('note', )
-
-
 class VirtualizationTechnologyAdmin(admin.ModelAdmin):
     inlines = (ContainerInline, VMInline)
 
 
 admin.site.register(Landspace)
 admin.site.register(VirtualizationTechnology, VirtualizationTechnologyAdmin)
-admin.site.register(HostPlug, HostPlugAdmin)
 admin.site.register(HostInstance, HostInstanceAdmin)
 admin.site.register(Computer, ComputerAdmin)
 admin.site.register(Cluster, ClusterAdmin)
@@ -131,3 +116,4 @@ admin.site.register(ClusterTechnology)
 admin.site.register(ClusterMapComputer)
 admin.site.register(Container)
 admin.site.register(VM)
+admin.site.register(ImportSystemsAggregated)
