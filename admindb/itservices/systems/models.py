@@ -31,6 +31,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
 from itservices.models import ITService
+from itservices.models import Group
 
 
 class Landspace(models.Model):
@@ -154,4 +155,5 @@ class ImportSystemsAggregated(AbstrSystem):
     """
     tag1 = models.CharField(max_length=75)
     tag2 = models.CharField(max_length=75)
+    group = models.ForeignKey(Group)
     
