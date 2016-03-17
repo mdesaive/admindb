@@ -153,7 +153,9 @@ class ImportSystemsAggregated(AbstrSystem):
     then put them into here, set tags to group them and finally 
     use DB commands to insert the fields in the correct models.
     """
-    tag1 = models.CharField(max_length=75)
-    tag2 = models.CharField(max_length=75)
+    tag1 = models.CharField(max_length=75, blank=True)
+    tag2 = models.CharField(max_length=75, blank=True)
+    tag3 = models.CharField(max_length=75, blank=True)
+
     group = models.ForeignKey(Group)
     
