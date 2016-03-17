@@ -146,16 +146,42 @@ class VM(AbstrVirtualSystem):
     virtualization_technology = models.ForeignKey(
         VirtualizationTechnology)  # KVM
 
-class ImportSystemsAggregated(AbstrSystem):
+class ImportSystemsAggregated(models.Model):
     """Import mixed systems here and seperate manually.
 
     If wanting to import mixed VMs, Containers, Devices, etc,
     then put them into here, set tags to group them and finally 
     use DB commands to insert the fields in the correct models.
+
+    Would like to inherit from AbstrSystem, but some fields
+    must be allowed blank and overriding does not work. Maybe
+    use django_polymorphic?
     """
+    name = models.CharField(max_length=75)
+    description = models.CharField(max_length=255, blank=True)
+    note = models.TextField(blank=True)
+    itservice = models.ForeignKey(ITService, blank=True, null=True)
+    landspace = models.ForeignKey(
+        Landspace, blank=True, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return self.name
+
+
+    class Meta:
+        ordering = ['name']
+
     tag1 = models.CharField(max_length=75, blank=True)
     tag2 = models.CharField(max_length=75, blank=True)
     tag3 = models.CharField(max_length=75, blank=True)
 
+    check1 = models.BooleanField()
+    check2 = models.BooleanField()
+
     group = models.ForeignKey(Group)
+    virtualization_technology = models.ForeignKey(
+        VirtualizationTechnology,
+        blank=True,
+        null=True
+        )
     

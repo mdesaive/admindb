@@ -106,6 +106,10 @@ class VirtualizationTechnologyAdmin(admin.ModelAdmin):
     inlines = (ContainerInline, VMInline)
 
 
+class ImportSystemsAggregatedAdmin(admin.ModelAdmin):
+    list_display = ('name', 'check1', 'check2', 'itservice', 'group', 'landspace', 'tag1', 'tag2', 'tag3')
+
+
 admin.site.register(Landspace)
 admin.site.register(VirtualizationTechnology, VirtualizationTechnologyAdmin)
 admin.site.register(HostInstance, HostInstanceAdmin)
@@ -116,4 +120,4 @@ admin.site.register(ClusterTechnology)
 admin.site.register(ClusterMapComputer)
 admin.site.register(Container)
 admin.site.register(VM)
-admin.site.register(ImportSystemsAggregated)
+admin.site.register(ImportSystemsAggregated, ImportSystemsAggregatedAdmin)
