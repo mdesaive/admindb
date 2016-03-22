@@ -32,7 +32,7 @@ In MySQL execute commands like to following. Take care to adapt database name, u
 
     virtualenv -p ~/opt/bin/python3.5 ~/dev/django-py35
     source ~/dev/django-py35/bin/activate
-    pip install django django-bootstrap3 django-tables2 mysqlclient
+    pip install django django-bootstrap3 django-tables2 mysqlclient django-genericadmin
 
 ## Clone admindb GIT Repository
 
