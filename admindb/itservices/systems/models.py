@@ -62,17 +62,17 @@ class AbstrSystem(models.Model):
 class AbstrVirtualSystem(AbstrSystem):
     """A virtual system references either a computer or a cluster as host.
     """
-    content_type = models.ForeignKey(
+    host_type = models.ForeignKey(
         ContentType,
         # limit_choices_to={'model': 'Cluster'
         limit_choices_to = models.Q(app_label = 'systems', model = 'Cluster') |
                            models.Q(app_label = 'systems', model = 'Computer')
     )
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    host_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('host_type', 'host_id')
 
     def __str__(self):
-        return str(self.content_type) + " - " + str(self.content_object)
+        return str(self.host_type) + " - " + str(self.content_object)
 
 
 class VirtualizationTechnology(models.Model):
@@ -164,6 +164,36 @@ class ImportSystemsAggregated(models.Model):
     landspace = models.ForeignKey(
         Landspace, blank=True, null=True, on_delete=models.SET_NULL)
 
+    tag1 = models.CharField(max_length=75, blank=True, null=True)
+    tag2 = models.CharField(max_length=75, blank=True, null=True)
+    tag3 = models.CharField(max_length=75, blank=True, null=True)
+
+    check1 = models.BooleanField(blank=True)
+    check2 = models.BooleanField(blank=True)
+
+    group = models.ForeignKey(Group, blank=True, null=True)
+    
+    virtualization_technology = models.ForeignKey(
+        VirtualizationTechnology,
+        blank=True,
+        null=True
+        )
+
+    host_type = models.ForeignKey(
+        ContentType,
+        # limit_choices_to={'model': 'Cluster'
+        limit_choices_to = models.Q(app_label = 'systems', model = 'Cluster') |
+                           models.Q(app_label = 'systems', model = 'Computer'),
+        blank=True,
+        null=True,
+    )
+
+    host_id = models.PositiveIntegerField(
+        # limit_choices_to = 
+        )
+
+    content_object = GenericForeignKey('host_type', 'host_id')
+
     def __str__(self):
         return self.name
 
@@ -171,17 +201,4 @@ class ImportSystemsAggregated(models.Model):
     class Meta:
         ordering = ['name']
 
-    tag1 = models.CharField(max_length=75, blank=True)
-    tag2 = models.CharField(max_length=75, blank=True)
-    tag3 = models.CharField(max_length=75, blank=True)
 
-    check1 = models.BooleanField()
-    check2 = models.BooleanField()
-
-    group = models.ForeignKey(Group)
-    virtualization_technology = models.ForeignKey(
-        VirtualizationTechnology,
-        blank=True,
-        null=True
-        )
-    

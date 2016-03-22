@@ -22,7 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from django.contrib import admin
-from django.contrib.contenttypes.admin import GenericTabularInline
+# from django.contrib.contenttypes.admin import GenericTabularInline
+
+# To use genericadmin
+from genericadmin.admin import GenericAdminModelAdmin
+from genericadmin.admin import TabularInlineWithGeneric
+from genericadmin.admin import GenericTabularInline
 
 from itservices.systems.models import Landspace
 from itservices.systems.models import VirtualizationTechnology
@@ -68,11 +73,29 @@ class ContainerInline(GenericTabularInline):
     extra = 1
     exclude = ('note', )
 
+    ct_field='host_type'
+    fk_field='host_id'
+    ct_fk_field='host_id'
+
 
 class VMInline(GenericTabularInline):
     model = VM
     extra = 1
     exclude = ('note', )
+
+    ct_field='host_type'
+    fk_field='host_id'
+    ct_fk_field='host_id'
+
+
+class ImportSystemsAggregatedInline(GenericTabularInline):
+    model = ImportSystemsAggregated
+    extra = 1
+    exclude = ('note', )
+
+    ct_field='host_type'
+    fk_field='host_id'
+    ct_fk_field='host_id'
 
 
 class ComputerAdmin(admin.ModelAdmin):
@@ -80,7 +103,7 @@ class ComputerAdmin(admin.ModelAdmin):
         None, {
             'fields': ['name', 'description', 'note', 'itservice', 'landspace']}),
     ]
-    inlines = (ContainerInline, VMInline)
+    inlines = (ContainerInline, VMInline, ImportSystemsAggregatedInline)
     list_display = ('name', 'description', 'itservice', 'landspace')
 
 
@@ -89,7 +112,7 @@ class ClusterAdmin(admin.ModelAdmin):
         None, {
             'fields': ['name', 'cluster_technology', 'description', 'note', 'itservice', 'landspace']}),
     ]
-    inlines = (ClusterMapComputerInline, ContainerInline, VMInline)
+    inlines = (ClusterMapComputerInline, ContainerInline, VMInline, ImportSystemsAggregatedInline)
     list_display = ('name', 'cluster_technology',
                     'description', 'itservice', 'landspace')
 
@@ -106,8 +129,24 @@ class VirtualizationTechnologyAdmin(admin.ModelAdmin):
     inlines = (ContainerInline, VMInline)
 
 
-class ImportSystemsAggregatedAdmin(admin.ModelAdmin):
+class ImportSystemsAggregatedAdmin(GenericAdminModelAdmin):
     list_display = ('name', 'check1', 'check2', 'itservice', 'group', 'landspace', 'tag1', 'tag2', 'tag3')
+    generic_fk_fields = [{
+        'ct_field': 'host_type',
+        'fk_field': 'host_id',
+        }]
+    content_type_whitelist = ('computer', 'cluster')
+
+
+class VMAdmin(GenericAdminModelAdmin):
+    generic_fk_fields = [{
+        'ct_field': 'host_type',
+        'fk_field': 'host_id',
+        }]
+
+
+class ContainerAdmin(GenericAdminModelAdmin):
+    pass
 
 
 admin.site.register(Landspace)
@@ -118,6 +157,6 @@ admin.site.register(Cluster, ClusterAdmin)
 admin.site.register(ComputerRole)
 admin.site.register(ClusterTechnology)
 admin.site.register(ClusterMapComputer)
-admin.site.register(Container)
-admin.site.register(VM)
+admin.site.register(Container, ContainerAdmin)
+admin.site.register(VM, VMAdmin)
 admin.site.register(ImportSystemsAggregated, ImportSystemsAggregatedAdmin)
