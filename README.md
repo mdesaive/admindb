@@ -33,6 +33,16 @@ In MySQL execute commands like to following. Take care to adapt database name, u
     virtualenv -p ~/opt/bin/python3.5 ~/dev/django-py35
     source ~/dev/django-py35/bin/activate
     pip install django django-bootstrap3 django-tables2 mysqlclient django-genericadmin
+    
+#### Install Patch to GenericAdmin ####
+
+Download patch from https://github.com/arthanson/django-genericadmin/pull/31.
+
+    wget https://github.com/arthanson/django-genericadmin/pull/31.diff
+    
+The diffs content is added to the root of the repository.
+
+And apply to ~/dev/django-py35/lib/python3.5/site-packages/genericadmin/admin.py.
 
 ## Clone admindb GIT Repository
 
