@@ -88,6 +88,7 @@ class VirtualizationTechnology(models.Model):
 
 class HostInstance(models.Model):
     # continue here - add foreign keys to hostplug
+    # Delete Host Instance? Check!
     virtualization_technology = models.ForeignKey(VirtualizationTechnology)
 
 

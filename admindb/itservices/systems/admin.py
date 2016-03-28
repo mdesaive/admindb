@@ -21,6 +21,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import pdb
+
 from django.contrib import admin
 
 # To define custom form
@@ -29,6 +31,7 @@ from django import forms
 
 # from django.contrib.contenttypes.admin import GenericTabularInline
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.models import ContentTypeManager
 
 # To use genericadmin
 from genericadmin.admin import GenericAdminModelAdmin
@@ -141,36 +144,63 @@ class ImportSystemsAggregatedForm(forms.ModelForm):
     extra_field = forms.ChoiceField()
 
     def fill_host_id_choices(self):
-    """Fills in a list of valid choices depending on selected host_type
-
-    Has to be hooked to the right place. Continue HERE! 
-    """
-        # Read out the host id selected.
-        my_host_id = self['host_type'].value()
-        print("Hello here! ****** " + str(my_host_id))
-
-        # Retrieve the ContentType object for the selected ID. 
-        my_host_type = ContentType.objects.get(pk=my_host_id)
-        print("Hello here! ****** " + str(my_host_type))
-
-        # Retrieve the model for the ContentType object.
-        my_host_model = my_host_type.model_class()
-        print("models: " + str(my_host_model))
-
+        """Prepares a list of choices to select host system. 
+        """
         # Fill in the values in the choice field.
-        self.fields['extra_field'].choices = [(x.pk, str(x)) for x in my_host_model.objects.all()]
+        choices_empty = [("None", "None")]
+        # choices_computer = [((Computer, x.pk), "Computer: " + str(x)) for x in Computer.objects.all()]
+        # choices_cluster = [((Cluster, x.pk), "Cluster: " + str(x)) for x in Cluster.objects.all()] 
+        choices_computer = [("computer " + str(x.pk), "Computer: " + str(x)) for x in Computer.objects.all()]
+        choices_cluster = [("cluster " + str(x.pk), "Cluster: " + str(x)) for x in Cluster.objects.all()] 
+        self.fields['extra_field'].choices = choices_empty + choices_cluster + choices_computer
 
-    def save(self, commit=True):
-        extra_field = self.cleaned_data.get('extra_field', None)
-        self.fill_host_id_choices()
-        return super(ImportSystemsAggregated, self).save(commit=commit)
+    def save_host_id_choice(self):
+        """Use value from 'extra_field' to set correct host.
+        """
+        selected_host_str = self.cleaned_data.get('extra_field', None)
+
+        if selected_host_str != "None":
+            selected_host_a = selected_host_str.split()
+
+            # pdb.set_trace()
+
+            my_content_type = selected_host_a[0]
+            my_content_id = selected_host_a[1]
+
+            # ContentType.objects.get(app_label="auth", model=selected_host[0])
+            # my_content_type = ContentTypeManager.get_for_models(selected_host[0])
+            # my_host_type_id = my_content_type(app_label="systems", model="computer")
+
+            self.host_id = my_content_id
+            self.host_type = my_content_type
+        else:
+            self.host_id = "Null"
+            self.host_type = "Null"
+
+    # def save(self, *args, **kwargs):
+    #     # self.save_host_id_choice()
+    #     super(ImportSystemsAggregated, self).save(*args, **kwargs)
+    #     # Raises error - super(type, obj): obj must be an instance or subtype of type
+
+    def save(self):
+        self.save_host_id_choice()
+        print("*** save ***")
+        return super(ImportSystemsAggregatedForm, self).save(commit=True)
+
+    def save_model(self, request, obj, form, change):
+        # obj.user = request.user
+        print("**** Here save_model")
+        self.save_host_id_choice(obj)
+        
+        obj.save()
+
+    # def save(self, commit=True):
+    #     # self.save_host_id_choice()
+    #     return super(ImportSystemsAggregated, self).save(commit=commit)
 
     def __init__(self, *args, **kwargs):
         super(ImportSystemsAggregatedForm, self).__init__(*args, **kwargs)
         # Overriding to define custom form
-        self.fields['host_id'].widget = forms.Select()
-        # self.fields['host_id'].choices = [('1',), ('2',),('3',), ]
-        # self.fields['host_id'].choices = [(x.pk, str(x)) for x in Computer.objects.all()]
         self.fill_host_id_choices()
 
     class Meta:
