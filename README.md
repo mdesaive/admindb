@@ -32,9 +32,15 @@ In MySQL execute commands like to following. Take care to adapt database name, u
 
     virtualenv -p ~/opt/bin/python3.5 ~/dev/django-py35
     source ~/dev/django-py35/bin/activate
-    pip install django django-bootstrap3 django-tables2 mysqlclient django-genericadmin
+    pip install django django-bootstrap3 django-tables2 mysqlclient django-polymorphic
+    
+
     
 #### Install Patch to GenericAdmin ####
+
+    pip install django-genericadmin
+
+Maybe django-genericadmin can be dropped and replaced with django-polymorphic.
 
 Download patch from https://github.com/arthanson/django-genericadmin/pull/31.
 
@@ -42,7 +48,7 @@ Download patch from https://github.com/arthanson/django-genericadmin/pull/31.
     
 The diffs content is added to the root of the repository.
 
-And apply to ~/dev/django-py35/lib/python3.5/site-packages/genericadmin/admin.py.
+And apply the diff to to ~/dev/django-py35/lib/python3.5/site-packages/genericadmin/admin.py.
 
 ## Clone admindb GIT Repository
 
