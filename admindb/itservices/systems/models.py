@@ -30,6 +30,9 @@ from django.core.exceptions import ValidationError
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
+# Use Django polymorphic.
+from polymorphic.models import PolymorphicModel
+
 from itservices.models import ITService
 from itservices.models import Group
 
@@ -42,37 +45,22 @@ class Landspace(models.Model):
         return self.name
 
 
-class AbstrSystem(models.Model):
+class GenericSystem(PolymorphicModel):
     name = models.CharField(max_length=75)
     description = models.CharField(max_length=255, blank=True)
     note = models.TextField(blank=True)
     itservice = models.ForeignKey(ITService)
     landspace = models.ForeignKey(
         Landspace, blank=True, null=True, on_delete=models.SET_NULL)
+    is_host = models.BooleanField()
 
     def __str__(self):
         return self.name
 
 
     class Meta:
-        abstract = True
+        # abstract = True
         ordering = ['name']
-
-
-class AbstrVirtualSystem(AbstrSystem):
-    """A virtual system references either a computer or a cluster as host.
-    """
-    host_type = models.ForeignKey(
-        ContentType,
-        # limit_choices_to={'model': 'Cluster'
-        limit_choices_to = models.Q(app_label = 'systems', model = 'Cluster') |
-                           models.Q(app_label = 'systems', model = 'Computer')
-    )
-    host_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('host_type', 'host_id')
-
-    def __str__(self):
-        return str(self.host_type) + " - " + str(self.content_object)
 
 
 class VirtualizationTechnology(models.Model):
@@ -86,18 +74,19 @@ class VirtualizationTechnology(models.Model):
         ordering = ['name']
 
 
-class HostInstance(models.Model):
-    # continue here - add foreign keys to hostplug
-    # Delete Host Instance? Check!
+class GenericVirtualSystem(GenericSystem):
+    """A virtual system references either a computer or a cluster as host.
+    """
+    host = models.ForeignKey(GenericSystem, related_name='genericvirtualsystem_host_ptr')
+    # host = models.ForeignKey(GenericSystem, related_name='+')
     virtualization_technology = models.ForeignKey(VirtualizationTechnology)
 
+    def __str__(self):
+        return str(self.name)
 
-class Computer(AbstrSystem):
-    # For using GenericRelations
-    # http://voorloopnul.com/blog/using-django-generic-relations/
-    def get_content_type(self):
-                return ContentType.objects.get_for_model(self).id
 
+
+class Computer(GenericSystem):
     def __str__(self):
         return str(self.name)
 
@@ -113,13 +102,10 @@ class ClusterTechnology(models.Model):
         ordering = ['name']
 
 
-class Cluster(AbstrSystem):
+class Cluster(GenericSystem):
     cluster_technology = models.ForeignKey(ClusterTechnology)
-    # For using GenericRelations
-    # http://voorloopnul.com/blog/using-django-generic-relations/
-    def get_content_type(self):
-                return ContentType.objects.get_for_model(self).id
-
+    computers = models.ManyToManyField(Computer, through='ClusterMapComputer')
+    
 
 class ComputerRole(models.Model):
     name = models.CharField(max_length=75)
@@ -138,23 +124,22 @@ class ClusterMapComputer(models.Model):
         return str(self.cluster) + " - " + str(self.computer)
 
 
-class Container(AbstrVirtualSystem):
-    virtualization_technology = models.ForeignKey(
-        VirtualizationTechnology)  # VServer or LXC, or...
+class Container(GenericVirtualSystem):
+    pass
 
 
-class VM(AbstrVirtualSystem):
-    virtualization_technology = models.ForeignKey(
-        VirtualizationTechnology)  # KVM
+class VM(GenericVirtualSystem):
+    pass
 
-class ImportSystemsAggregated(models.Model):
+
+class ImportSystems(models.Model):
     """Import mixed systems here and seperate manually.
 
     If wanting to import mixed VMs, Containers, Devices, etc,
     then put them into here, set tags to group them and finally 
     use DB commands to insert the fields in the correct models.
 
-    Would like to inherit from AbstrSystem, but some fields
+    Would like to inherit from GenericSystem, but some fields
     must be allowed blank and overriding does not work. Maybe
     use django_polymorphic?
     """
@@ -165,6 +150,17 @@ class ImportSystemsAggregated(models.Model):
     landspace = models.ForeignKey(
         Landspace, blank=True, null=True, on_delete=models.SET_NULL)
 
+    host = models.ForeignKey(GenericSystem, blank=True, null=True)
+    virtualization_technology = models.ForeignKey(
+        VirtualizationTechnology,
+        blank=True,
+        null=True)
+    cluster_technology = models.ForeignKey(
+        ClusterTechnology,
+        blank=True,
+        null=True)
+
+
     tag1 = models.CharField(max_length=75, blank=True, null=True)
     tag2 = models.CharField(max_length=75, blank=True, null=True)
     tag3 = models.CharField(max_length=75, blank=True, null=True)
@@ -174,27 +170,6 @@ class ImportSystemsAggregated(models.Model):
 
     group = models.ForeignKey(Group, blank=True, null=True)
     
-    virtualization_technology = models.ForeignKey(
-        VirtualizationTechnology,
-        blank=True,
-        null=True
-        )
-
-    host_type = models.ForeignKey(
-        ContentType,
-        # limit_choices_to={'model': 'Cluster'
-        limit_choices_to = models.Q(app_label = 'systems', model = 'Cluster') |
-                           models.Q(app_label = 'systems', model = 'Computer'),
-        blank=True,
-        null=True,
-    )
-
-    host_id = models.PositiveIntegerField(
-        # limit_choices_to = 
-        )
-
-    content_object = GenericForeignKey('host_type', 'host_id')
-
     def __str__(self):
         return self.name
 
