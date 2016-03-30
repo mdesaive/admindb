@@ -16,6 +16,8 @@ Including another URLconf
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
+from django.views.generic import TemplateView
+
 # urlpatterns = [
 #     url(r'^admin/', admin.site.urls),
 # ]
@@ -25,6 +27,7 @@ urlpatterns = patterns('',
     # Examples:
     # url(r'^$', 'admin.views.home', name='home'),
     # url(r'^blog/', include('blog.urls')),
+    url(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
     url(r'^itservices/', include('itservices.urls')),
     url(r'^itservices/systems/', include('itservices.systems.urls')),
     url(r'^admin/', include(admin.site.urls)),

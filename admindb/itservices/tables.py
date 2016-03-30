@@ -17,7 +17,8 @@ class GroupsTable(tables.Table):
             model = Group
             # add class="paleblue" to <table> tag
             attrs = {"class": "paleblue"}
-            sequence =("name", "description")
+            sequence = ("name", "description")
+            exclude = ("id", "short")
             orderable = True
             order_by = ("name")
 

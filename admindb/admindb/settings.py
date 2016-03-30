@@ -105,7 +105,13 @@ ROOT_URLCONF = 'admindb.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # 'DIRS': [],
+        'DIRS': (
+                    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
+                    # Always use forward slashes, even on Windows.
+                    # Don't forget to use absolute paths, not relative paths.
+                    os.path.join('', 'static-templates').replace('\\','/'),
+                ),
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
