@@ -8,6 +8,8 @@ In MySQL execute commands like to following. Take care to adapt database name, u
 
     create database admindb;
     grant all privileges on admindb.* to django@localhost identified by 'my_user_pass';
+    # Use if necessary:
+    # grant all privileges on admindb.* to 'django'@'192.168.150.%' identified by 'my_user_pass';
     quit
 
 ## Prepare VirtualEnv
